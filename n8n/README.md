@@ -6,6 +6,7 @@ These files are ready to import into n8n:
 - `kyra-memory-writer.workflow.json`
 - `kyra-obsidian-voice-bridge.workflow.json`
 - `kyra-playwright-tool.workflow.json`
+- `kyra-weft-bridge.workflow.json` (Weaver/Obsidian memory sync)
 
 ## Prerequisites
 
@@ -60,6 +61,7 @@ These files are ready to import into n8n:
 - `kyra-memory-writer.workflow.json` routes webhook data into Kyra memory storage
 - `kyra-obsidian-voice-bridge.workflow.json` sends task payloads to the Kyra chat endpoint
 - `kyra-playwright-tool.workflow.json` runs local browser capture/extraction through `POST /kyra/tools/playwright`
+- `kyra-weft-bridge.workflow.json` uses `weft-integration.js` as a compatibility wrapper for Kyra's Weaver memory index and Obsidian vault
 - Playwright output screenshots are written to `output/playwright/` unless you pass `screenshotPath`
 
 ## Example: Playwright Tool Payload

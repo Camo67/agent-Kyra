@@ -11,6 +11,7 @@ import {
   readKyraMemory,
   writeKyraMemory
 } from "../obsidian-memory.js";
+import WeaverMemory from "../weaver-memory.js";
 import { createVoiceReply } from "../voice-adapter.js";
 
 test("obsidian vault is created and can store a conversation", async () => {
@@ -114,6 +115,57 @@ test("live mxit memory can be linked into obsidian", async () => {
     assert.match(written, /### ASSISTANT · G4 · STATUS/);
   } finally {
     await rm(vaultPath, { recursive: true, force: true });
+  }
+});
+
+test("weaver indexes obsidian-backed Kyra memory", async () => {
+  const vaultPath = await mkdtemp(path.join(tmpdir(), "kyra-weaver-vault-"));
+  const indexDir = await mkdtemp(path.join(tmpdir(), "kyra-weaver-index-"));
+  const indexPath = path.join(indexDir, "index.json");
+
+  try {
+    const weaver = new WeaverMemory({ vaultPath, indexPath });
+    const node = await weaver.createNode("memory", "Routing Choice", {
+      content: "Use Weaver and Obsidian for Kyra memory instead of ChromaDB.",
+      metadata: {
+        source: "test"
+      }
+    });
+
+    const obsidianPath = await weaver.weaverToObsidian(node);
+    const matches = await weaver.search("Kyra memory ChromaDB");
+    const written = await readFile(path.join(vaultPath, obsidianPath), "utf8");
+
+    assert.equal(obsidianPath, path.join("Kyra", "Memory", "routing-choice.md"));
+    assert.equal(matches[0].id, node.id);
+    assert.match(written, /Use Weaver and Obsidian/);
+  } finally {
+    await rm(vaultPath, { recursive: true, force: true });
+    await rm(indexDir, { recursive: true, force: true });
+  }
+});
+
+test("weaver can ingest an existing obsidian note", async () => {
+  const vaultPath = await mkdtemp(path.join(tmpdir(), "kyra-weaver-ingest-vault-"));
+  const indexDir = await mkdtemp(path.join(tmpdir(), "kyra-weaver-ingest-index-"));
+  const indexPath = path.join(indexDir, "index.json");
+
+  try {
+    const memory = await writeKyraMemory({
+      title: "Memory Backend",
+      content: "Obsidian is the durable store. Weaver is the retrieval weave.",
+      tags: ["memory", "weaver"],
+      source: "test"
+    }, { vaultPath });
+    const weaver = new WeaverMemory({ vaultPath, indexPath });
+    const node = await weaver.obsidianToWeaver(memory.relativePath);
+    const matches = await weaver.search("retrieval weave");
+
+    assert.equal(node.metadata.obsidianPath, memory.relativePath);
+    assert.equal(matches[0].metadata.obsidianPath, memory.relativePath);
+  } finally {
+    await rm(vaultPath, { recursive: true, force: true });
+    await rm(indexDir, { recursive: true, force: true });
   }
 });
 
