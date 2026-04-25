@@ -1,0 +1,122 @@
+{
+  "name": "kyra-telegram-bridge",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-kyra",
+        "responseMode": "responseNode"
+      },
+      "id": "telegram-webhook",
+      "webhookId": "3e5643ba-17cc-4f4a-8f5c-7f88bb0f6590",
+      "name": "Telegram Kyra Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8790/kyra/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n        message: ($json.body?.message?.text ?? $json.body?.edited_message?.text ?? $json.body?.message?.caption ?? ''),\n        telegramVoice: $json.body?.message?.voice ? {\n          fileId: $json.body?.message?.voice?.file_id,\n          mimeType: $json.body?.message?.voice?.mime_type,\n          duration: $json.body?.message?.voice?.duration\n        } : undefined,\n        speak: true\n      }) }}",
+        "options": {
+          "response": {
+            "responseFormat": "json"
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "call-kyra",
+      "name": "Call Local Kyra Bridge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: ($node['Telegram Kyra Webhook'].json?.body?.message?.chat?.id ?? $node['Telegram Kyra Webhook'].json?.body?.edited_message?.chat?.id), text: $node['Call Local Kyra Bridge'].json['reply'] || 'Kyra did not return a response yet.' }) }}"
+      },
+      "id": "send-telegram",
+      "name": "Send Telegram Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Telegram",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Telegram Kyra Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call Local Kyra Bridge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Local Kyra Bridge": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null
+}

@@ -1,0 +1,359 @@
+{
+  "name": "KYRA-WEFT Bridge",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "syncDirection",
+              "value": "={{ $json.direction || 'bidirectional' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-sync-direction",
+      "name": "Extract Sync Direction",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "path": "kyra-weft-sync",
+        "method": "POST",
+        "respondWhen": "later"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "kyra-weft-sync"
+    },
+    {
+      "parameters": {
+        "operation": "execute",
+        "jsCode": "// Import the Weft integration\nconst WeftIntegration = require('../../../weft-integration.js').default;\n\n// Create an instance of the integration\nconst weftIntegration = new WeftIntegration();\n\n// Perform the sync based on the direction\nconst direction = $input.first().json.syncDirection || 'bidirectional';\n\ntry {\n  const result = await weftIntegration.syncMemory(direction);\n  \n  // Return the result\n  return [{\n    json: {\n      success: true,\n      syncDirection: direction,\n      nodesProcessed: result.length,\n      timestamp: new Date().toISOString()\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      error: error.message,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "id": "weft-sync-execution",
+      "name": "Weft Sync Execution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "weftNodeLabel",
+              "value": "={{ $json.nodeLabel || 'Dynamic Node from n8n' }}"
+            },
+            {
+              "name": "weftNodeType",
+              "value": "={{ $json.nodeType || 'memory' }}"
+            },
+            {
+              "name": "weftNodeContent",
+              "value": "={{ $json.content || 'Content created from n8n workflow' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-weft-node-data",
+      "name": "Prepare Weft Node Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "execute",
+        "jsCode": "const WeftIntegration = require('../../../weft-integration.js').default;\n\nconst weftIntegration = new WeftIntegration();\n\n// Get the prepared data\nconst nodeData = {\n  label: $input.first().json.weftNodeLabel,\n  type: $input.first().json.weftNodeType,\n  content: $input.first().json.weftNodeContent,\n  metadata: {\n    source: 'n8n',\n    createdAt: new Date().toISOString(),\n    workflow: 'KYRA-WEFT Bridge'\n  }\n};\n\n// Create a Weft node\nconst node = weftIntegration.createNode(\n  nodeData.type,\n  nodeData.label,\n  {\n    content: nodeData.content,\n    metadata: nodeData.metadata\n  }\n);\n\nreturn [{\n  json: {\n    nodeId: node.id,\n    nodeLabel: node.label,\n    nodeDetails: node,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "create-weft-node",
+      "name": "Create Weft Node",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "8c382867-351d-43a9-b29c-4d3d715d3d6f",
+              "leftValue": "={{ $('Webhook Trigger').item.json.action }}",
+              "rightValue": "create_node",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-create-node-action",
+      "name": "Check Create Node Action",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        500,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Import the Weft integration\nconst WeftIntegration = require('../../../weft-integration.js').default;\n\nconst weftIntegration = new WeftIntegration();\n\n// Convert the created Weft node to an Obsidian note\nconst nodeId = $('Create Weft Node').item.json.nodeId;\nconst node = weftIntegration.getNodeById(nodeId);\n\nif (!node) {\n  throw new Error(`Node with ID ${nodeId} not found`);\n}\n\ntry {\n  const obsidianPath = await weftIntegration.weftToObsidian(node, `Kyra/Memory/${node.label}.md`);\n  \n  return [{\n    json: {\n      success: true,\n      action: 'convert_to_obsidian',\n      nodeId: nodeId,\n      obsidianPath: obsidianPath,\n      timestamp: new Date().toISOString()\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      error: error.message,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "id": "convert-node-to-obsidian",
+      "name": "Convert Node to Obsidian",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simple return to finish the workflow\nreturn [{\n  json: {\n    message: 'Workflow completed successfully',\n    timestamp: new Date().toISOString(),\n    workflow: 'KYRA-WEFT Bridge',\n    action: $('Webhook Trigger').item.json.action || 'sync',\n    success: true\n  }\n}];"
+      },
+      "id": "final-response",
+      "name": "Final Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "notePath",
+              "value": "={{ $json.notePath || 'Kyra/Memory/latest-note.md' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-obsidian-path",
+      "name": "Prepare Obsidian Path",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        500,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "8c382867-351d-43a9-b29c-4d3d715d3d6f",
+              "leftValue": "={{ $('Webhook Trigger').item.json.action }}",
+              "rightValue": "convert_note",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-convert-note-action",
+      "name": "Check Convert Note Action",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        500,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const WeftIntegration = require('../../../weft-integration.js').default;\n\nconst weftIntegration = new WeftIntegration();\n\n// Convert an Obsidian note to a Weft node\nconst notePath = $('Prepare Obsidian Path').item.json.notePath;\n\ntry {\n  const node = await weftIntegration.obsidianToWeft(notePath);\n  \n  return [{\n    json: {\n      success: true,\n      action: 'convert_to_weft',\n      nodeId: node.id,\n      notePath: notePath,\n      nodeDetails: node,\n      timestamp: new Date().toISOString()\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      error: error.message,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "id": "convert-note-to-weft",
+      "name": "Convert Note to Weft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Sync Direction",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Create Node Action",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Convert Note Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Sync Direction": {
+      "main": [
+        [
+          {
+            "node": "Weft Sync Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weft Sync Execution": {
+      "main": [
+        [
+          {
+            "node": "Prepare Weft Node Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Weft Node Data": {
+      "main": [
+        [
+          {
+            "node": "Create Weft Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Weft Node": {
+      "main": [
+        [
+          {
+            "node": "Convert Node to Obsidian",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Node to Obsidian": {
+      "main": [
+        [
+          {
+            "node": "Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Create Node Action": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prepare Weft Node Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Convert Note Action": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prepare Obsidian Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Obsidian Path": {
+      "main": [
+        [
+          {
+            "node": "Convert Note to Weft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Note to Weft": {
+      "main": [
+        [
+          {
+            "node": "Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "executionTimeout": -1,
+    "timezone": "America/New_York"
+  },
+  "id": "kyra-weft-bridge"
+}

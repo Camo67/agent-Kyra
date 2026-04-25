@@ -1,0 +1,155 @@
+{
+  "compressionSamples": [
+    {
+      "input": "I am going to build the system tomorrow because I need to know how it works",
+      "compressed": {
+        "text": "i m goin 2 bld da sys 2moro coz i nd 2 knw hw it works",
+        "ratio": 0.72,
+        "originalLength": 75,
+        "compressedLength": 54
+      },
+      "decompressed": "i am going to build the system tomorrow because i need to know how it works"
+    },
+    {
+      "input": "hi there",
+      "compressed": {
+        "text": "hi there",
+        "ratio": 1,
+        "originalLength": 8,
+        "compressedLength": 8
+      },
+      "decompressed": "hi there"
+    },
+    {
+      "input": "PLEASE fix the local model now!!",
+      "compressed": {
+        "text": "plz fix da lcl mdl now!!",
+        "ratio": 0.75,
+        "originalLength": 32,
+        "compressedLength": 24
+      },
+      "decompressed": "please fix the local model now!!"
+    },
+    {
+      "input": "thanks for your help",
+      "compressed": {
+        "text": "thx 4 ur help",
+        "ratio": 0.65,
+        "originalLength": 20,
+        "compressedLength": 13
+      },
+      "decompressed": "thanks for your help"
+    }
+  ],
+  "encodingSamples": [
+    {
+      "input": "I am going to build the system tomorrow because I need to know how it works",
+      "role": "user",
+      "event": {
+        "channel": 0,
+        "pitch": 63,
+        "velocity": 64,
+        "duration": 3360,
+        "noteName": "D#4",
+        "domain": "BUILD",
+        "role": "user",
+        "raw": "I am going to build the system tomorrow because I need to know how it works",
+        "compressed": "i m goin 2 bld da sys 2moro coz i nd 2 knw hw it works"
+      }
+    },
+    {
+      "input": "hi there",
+      "role": "user",
+      "event": {
+        "channel": 0,
+        "pitch": 36,
+        "velocity": 64,
+        "duration": 100,
+        "noteName": "C2",
+        "domain": "GREETING",
+        "role": "user",
+        "raw": "hi there",
+        "compressed": "hi there"
+      }
+    },
+    {
+      "input": "PLEASE fix the local model now!!",
+      "role": "user",
+      "event": {
+        "channel": 0,
+        "pitch": 64,
+        "velocity": 106,
+        "duration": 1760,
+        "noteName": "E4",
+        "domain": "FIX",
+        "role": "user",
+        "raw": "PLEASE fix the local model now!!",
+        "compressed": "plz fix da lcl mdl now!!"
+      }
+    },
+    {
+      "input": "thanks for your help",
+      "role": "assistant",
+      "event": {
+        "channel": 1,
+        "pitch": 40,
+        "velocity": 64,
+        "duration": 720,
+        "noteName": "E2",
+        "domain": "GRATITUDE",
+        "role": "assistant",
+        "raw": "thanks for your help",
+        "compressed": "thx 4 ur help"
+      }
+    }
+  ],
+  "logContext": "[U ch:0 pit:63 dom:BUILD vel:64 dur:3360ms] i m goin 2 bld da sys 2moro coz i nd 2 knw hw it works\n[U ch:0 pit:36 dom:GREETING vel:64 dur:100ms] hi there\n[U ch:0 pit:64 dom:FIX vel:106 dur:1760ms] plz fix da lcl mdl now!!\n[A ch:1 pit:40 dom:GRATITUDE vel:64 dur:720ms] thx 4 ur help",
+  "bufferPruneCase": {
+    "maxEvents": 2,
+    "inputs": [
+      {
+        "text": "Please build the system tomorrow because we need the full memory log",
+        "role": "user"
+      },
+      {
+        "text": "I can help build the model right now",
+        "role": "assistant"
+      },
+      {
+        "text": "hi",
+        "role": "user"
+      }
+    ],
+    "expectedLog": [
+      {
+        "channel": 0,
+        "pitch": 63,
+        "velocity": 64,
+        "duration": 2720,
+        "noteName": "D#4",
+        "domain": "BUILD",
+        "role": "user",
+        "raw": "Please build the system tomorrow because we need the full memory log",
+        "compressed": "plz bld da sys 2moro coz we nd da full mem log"
+      },
+      {
+        "channel": 1,
+        "pitch": 63,
+        "velocity": 64,
+        "duration": 2080,
+        "noteName": "D#4",
+        "domain": "BUILD",
+        "role": "assistant",
+        "raw": "I can help build the model right now",
+        "compressed": "i can help bld da mdl right now"
+      }
+    ],
+    "expectedContext": "=MIDI×MXIT MEMORY LOG [2/2]=\n[U ch:0 pit:63 dom:BUILD vel:64 dur:2720ms] plz bld da sys 2moro coz we nd da full mem log\n[A ch:1 pit:63 dom:BUILD vel:64 dur:2080ms] i can help bld da mdl right now",
+    "expectedStats": {
+      "count": 2,
+      "maxEvents": 2,
+      "dominantDomain": "BUILD",
+      "avgVelocity": 64
+    }
+  }
+}

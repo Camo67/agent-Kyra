@@ -1,0 +1,85 @@
+{
+  "name": "kyra-obsidian-voice-bridge",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kyra-task",
+        "responseMode": "responseNode"
+      },
+      "id": "kyra-task-webhook",
+      "name": "Kyra Task Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8790/kyra/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.body?.message ?? $json.body?.userText ?? $json.body?.text ?? '', speak: $json.body?.speak ?? true }) }}",
+        "options": {
+          "response": {
+            "responseFormat": "json"
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "call-kyra",
+      "name": "Call Local Kyra Bridge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "return-kyra-reply",
+      "name": "Return Kyra Reply",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Kyra Task Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call Local Kyra Bridge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Local Kyra Bridge": {
+      "main": [
+        [
+          {
+            "node": "Return Kyra Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null
+}

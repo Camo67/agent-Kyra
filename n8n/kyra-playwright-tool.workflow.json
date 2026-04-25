@@ -1,0 +1,85 @@
+{
+  "name": "kyra-playwright-tool",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kyra-playwright",
+        "responseMode": "responseNode"
+      },
+      "id": "kyra-playwright-webhook",
+      "name": "Kyra Playwright Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8790/kyra/tools/playwright",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ url: $json.body?.url ?? '', selector: $json.body?.selector, extractSelector: $json.body?.extractSelector, screenshot: $json.body?.screenshot ?? true, screenshotPath: $json.body?.screenshotPath, fullPage: $json.body?.fullPage ?? true, waitUntil: $json.body?.waitUntil, timeoutMs: $json.body?.timeoutMs ?? 30000, afterLoadWaitMs: $json.body?.afterLoadWaitMs ?? 1000, viewportWidth: $json.body?.viewportWidth, viewportHeight: $json.body?.viewportHeight, maxTextLength: $json.body?.maxTextLength ?? 4000, headers: $json.body?.headers }) }}",
+        "options": {
+          "response": {
+            "responseFormat": "json"
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "run-playwright-tool",
+      "name": "Run Playwright Tool",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "return-playwright-result",
+      "name": "Return Playwright Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Kyra Playwright Webhook": {
+      "main": [
+        [
+          {
+            "node": "Run Playwright Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Playwright Tool": {
+      "main": [
+        [
+          {
+            "node": "Return Playwright Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null
+}

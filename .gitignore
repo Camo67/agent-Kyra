@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Environment and local secrets
+.env
+.env.*
+local.env
+
+# Runtime output and generated artifacts
+output/
+.playwright-cli/
+playwright-report/
+test-results/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+
+# Local memory transcripts can contain private tokens or personal context
+obsidian-vault/Kyra/Conversations/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

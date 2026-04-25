@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyra Dashboard - AI Automation Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6b8cbc;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: var(--light);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--dark), #1a2a3a);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: var(--info);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--info), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .status-indicators {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+        
+        .status-inactive {
+            background-color: var(--danger);
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 1rem;
+            gap: 1rem;
+        }
+        
+        .panel {
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: var(--primary);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-message {
+            background: rgba(255, 255, 255, 0.1);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-info {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.3rem;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .send-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            background: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .terminal-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .terminal-output {
+            flex: 1;
+            background: #1e1e1e;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            height: calc(100% - 60px);
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .terminal-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            border: none;
+            background: var(--dark);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .terminal-btn:hover {
+            background: var(--primary);
+        }
+        
+        .terminal-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .terminal-command {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border-radius: 6px;
+            border: none;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            font-family: monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            color: var(--info);
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            background: var(--success);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .status-indicators {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+            <h1>Kyra Dashboard</h1>
+        </div>
+        <div class="status-indicators">
+            <div class="status-item">
+                <span class="status-dot status-active"></span>
+                <span>Kyra Online</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot status-active"></span>
+                <span>System Healthy</span>
+            </div>
+            <div class="status-item">
+                <div class="connection-status">
+                    <span class="status-dot" id="ws-status"></span>
+                    <span id="ws-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="panel" style="flex: 2;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-comments"></i> Kyra Chat Interface</h2>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div>Hello! I'm Kyra, your AI automation assistant. How can I help you today?</div>
+                        <div class="message-info">Kyra • Just now</div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type your message to Kyra..." autocomplete="off">
+                    <button class="send-btn" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel" style="flex: 1;">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="fas fa-terminal"></i> Remote Terminal</h2>
+            </div>
+            
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <div class="tabs">
+                        <div class="tab active">Main</div>
+                        <div class="tab">Tasks</div>
+                        <div class="tab">Logs</div>
+                    </div>
+                </div>
+                
+                <div class="terminal-output" id="terminalOutput">
+$ Welcome to Kyra Remote Terminal
+$ System status: Operational
+$ Connection: WebSocket established
+$ 
+                </div>
+                
+                <div class="terminal-controls">
+                    <button class="terminal-btn" id="clearTerminal">
+                        <i class="fas fa-broom"></i> Clear
+                    </button>
+                    <button class="terminal-btn" id="refreshSystem">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="terminal-input">
+                    <input type="text" class="terminal-command" id="terminalCommand" placeholder="Enter command...">
+                    <button class="send-btn" id="executeCommand">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Initialize WebSocket connection
+        const socket = io();
+        
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const terminalCommand = document.getElementById('terminalCommand');
+        const executeCommand = document.getElementById('executeCommand');
+        const clearTerminal = document.getElementById('clearTerminal');
+        const refreshSystem = document.getElementById('refreshSystem');
+        const wsStatusDot = document.getElementById('ws-status');
+        const wsText = document.getElementById('ws-text');
+        
+        // Update WebSocket connection status
+        function updateWsStatus(connected) {
+            if (connected) {
+                wsStatusDot.className = 'status-dot status-active';
+                wsText.textContent = 'Connected';
+            } else {
+                wsStatusDot.className = 'status-dot status-inactive';
+                wsText.textContent = 'Disconnected';
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-info">${isUser ? 'You' : 'Kyra'} • ${timeString}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Add output to terminal
+        function addToTerminal(text) {
+            terminalOutput.textContent += text + '\n$ ';
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+        
+        // Create notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                info: '#3498db',
+                success: '#2ecc71',
+                warning: '#f39c12',
+                danger: '#e74c3c'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.background = colors[type] || colors.info;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Send message to Kyra
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            chatInput.value = '';
+            
+            // Send to server via WebSocket
+            socket.emit('chat-message', { message });
+        }
+        
+        // Execute terminal command
+        function executeTerminalCommand() {
+            const command = terminalCommand.value.trim();
+            if (!command) return;
+            
+            addToTerminal(`$ ${command}`);
+            terminalCommand.value = '';
+            
+            // Send to server via WebSocket
+            socket.emit('terminal-command', { command });
+        }
+        
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            updateWsStatus(true);
+            addToTerminal('$ Connected to Kyra server. Ready for commands.');
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            updateWsStatus(false);
+            showNotification('Disconnected from server', 'danger');
+        });
+        
+        socket.on('system-status', (data) => {
+            console.log('System status:', data);
+            if (data.restarted) {
+                showNotification('System restarted successfully', 'success');
+            }
+        });
+        
+        socket.on('chat-response', (data) => {
+            addMessage(data.message, false);
+        });
+        
+        socket.on('chat-error', (data) => {
+            addMessage(`Error: ${data.error}`, false);
+        });
+        
+        socket.on('terminal-response', (data) => {
+            if (data.output) {
+                addToTerminal(data.output);
+            }
+        });
+        
+        socket.on('terminal-activity', (data) => {
+            showNotification(`Command executed by user ${data.executedBy}`, 'info');
+        });
+        
+        socket.on('terminal-error', (data) => {
+            addToTerminal(`Error: ${data.error}`);
+        });
+        
+        // Listen for events from the server
+        socket.on('new-leads', (data) => {
+            showNotification(`New leads added: ${data.count}`, 'success');
+        });
+        
+        socket.on('website-quality-checked', (data) => {
+            showNotification(`Website quality checked for ${data.results.length} sites`, 'info');
+        });
+        
+        socket.on('outreach-generated', (data) => {
+            showNotification(`Outreach generated for ${data.business}`, 'info');
+        });
+        
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        executeCommand.addEventListener('click', executeTerminalCommand);
+        terminalCommand.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') executeTerminalCommand();
+        });
+        
+        clearTerminal.addEventListener('click', () => {
+            terminalOutput.textContent = '$ ';
+        });
+        
+        refreshSystem.addEventListener('click', () => {
+            socket.emit('terminal-command', { command: 'status' });
+        });
+        
+        // Initialize WebSocket status
+        updateWsStatus(false);
+    </script>
+</body>
+</html>

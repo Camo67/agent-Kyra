@@ -1,0 +1,49 @@
+{
+  "name": "kyra-lead-scanner",
+  "version": "1.0.0",
+  "description": "Global Business Lead Scanner Platform - Find businesses without websites worldwide",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "scrape": "node scraper/scrape-businesses.js",
+    "test": "node test/js-parity.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.1",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "googlemaps": "^1.1.1",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "ollama": "^0.5.0",
+    "playwright": "^1.39.0",
+    "socket.io": "^4.7.2",
+    "supabase": "^1.2.0",
+    "undici": "^5.28.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "ai",
+    "lead-generation",
+    "business-scanner",
+    "automation",
+    "kyra"
+  ],
+  "author": "Cameron \"Camo\" de Vries",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/camo67/kyra-lead-scanner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/camo67/kyra-lead-scanner/issues"
+  },
+  "homepage": "https://github.com/camo67/kyra-lead-scanner#readme"
+}

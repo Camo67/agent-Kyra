@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYRA-CYBER — Purple Hat Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;700;900&display=swap');
+
+:root {
+  --bg: #060810;
+  --panel: #0b0f18;
+  --border: #1a2535;
+  --border2: #243045;
+  --red: #ff2244;
+  --blue: #0077ff;
+  --purple: #9b35ff;
+  --cyan: #00e5ff;
+  --green: #39ff14;
+  --yellow: #ffd600;
+  --text: #b8cce0;
+  --muted: #3a4f66;
+  --mono: 'Share Tech Mono', monospace;
+  --display: 'Barlow Condensed', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ANIMATED GRID BG */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(155,53,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155,53,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.wrap { position:relative; z-index:1; padding:20px; max-width:860px; }
+
+/* HEADER */
+.header {
+  border-bottom: 2px solid var(--purple);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--display);
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--red) 0%, var(--purple) 50%, var(--blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 20px rgba(155,53,255,0.5));
+}
+
+.subtitle {
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.hat-badge {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hat {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+}
+
+.red-hat { color: var(--red); }
+.blue-hat { color: var(--blue); }
+.purple-hat { color: var(--purple); border-width: 2px; }
+
+/* SECTIONS */
+.section {
+  margin-bottom: 20px;
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--purple);
+  background: var(--panel);
+}
+
+.section.red { border-left-color: var(--red); }
+.section.blue { border-left-color: var(--blue); }
+.section.green { border-left-color: var(--green); }
+.section.yellow { border-left-color: var(--yellow); }
+
+.sec-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sec-title {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+}
+
+.sec-tag {
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.sec-body { padding: 14px; }
+
+.label {
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  margin-top: 14px;
+  text-transform: uppercase;
+}
+
+.label:first-child { margin-top: 0; }
+
+pre {
+  background: #040608;
+  border: 1px solid var(--border);
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: transparent;
+  border: 1px solid var(--purple);
+  color: var(--purple);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--purple); color: var(--bg); }
+.copy-btn.ok { border-color: var(--green); color: var(--green); }
+
+/* TWO-COL */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width:600px){ .two-col { grid-template-columns:1fr; } }
+
+.mini-card {
+  background: #040608;
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+
+.mini-card .label { margin-top: 0; }
+
+ul { list-style: none; }
+ul li { padding: 2px 0; }
+ul li::before { content: '▸ '; color: var(--purple); }
+ul li.red::before { color: var(--red); }
+ul li.blue::before { color: var(--blue); }
+
+/* PHASE BLOCKS */
+.phase {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  align-items: flex-start;
+}
+
+.phase-num {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--purple);
+  opacity: 0.4;
+  line-height: 1;
+  min-width: 28px;
+}
+
+.phase-content .phase-title {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: var(--purple);
+  margin-bottom: 2px;
+}
+
+.phase-content .phase-desc {
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+/* TOOL TABLE */
+.tool-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.tool-table th {
+  text-align: left;
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border2);
+}
+.tool-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.tool-table tr:last-child td { border-bottom: none; }
+.tool-name { color: var(--cyan); }
+.tool-type-red { color: var(--red); font-size: 0.65rem; }
+.tool-type-blue { color: var(--blue); font-size: 0.65rem; }
+.tool-type-purple { color: var(--purple); font-size: 0.65rem; }
+
+/* FOOTER */
+.footer {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="title">KYRA-CYBER</div>
+    <div class="subtitle">CAMODEVOPS // PURPLE HAT SECURITY AGENT // v1.0</div>
+  </div>
+  <div class="hat-badge">
+    <div class="hat red-hat">RED TEAM</div>
+    <div class="hat purple-hat">PURPLE HAT</div>
+    <div class="hat blue-hat">BLUE TEAM</div>
+  </div>
+</div>
+
+<!-- SYSTEM PROMPT -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--purple)">SYSTEM PROMPT</div>
+    <div class="sec-tag">PASTE INTO OLLAMA MODELFILE / N8N AI AGENT / OPEN-WEBUI</div>
+  </div>
+  <div class="sec-body">
+    <pre><button class="copy-btn" onclick="cp(this)">COPY</button>You are KYRA-CYBER, the cybersecurity sub-agent of Cameron De Vries (CamodevOps).
+
+IDENTITY: Purple Hat security specialist — you operate across both offensive (red team) and defensive (blue team) domains. You think like an attacker to build better defenses. You think like a defender to run smarter attacks. Both hemispheres, one agent.
+
+OPERATING CONTEXT:
+Cameron is pursuing a professional cybersecurity career alongside his DevOps and AI work. All security work is ethical, legal, and conducted within authorised scope. You support: learning, CTF challenges, lab environments, authorised pentesting engagements, and defensive hardening of Cameron's own infrastructure (CamodevOps stack, Supabase, Cloudflare, Ubuntu nodes, Ollama server, Huawei N5368X 5G CPE).
+
+SPECIALISATIONS:
+
+RED TEAM (Offensive):
+- Reconnaissance: OSINT, passive/active recon, network mapping
+- Scanning & Enumeration: Nmap, Nessus, Nikto, Gobuster, ffuf
+- Exploitation: Metasploit, manual exploitation, CVE research
+- Web App Pentesting: OWASP Top 10, Burp Suite, SQLi, XSS, IDOR, SSRF, auth bypass
+- Network Pentesting: MitM, ARP spoofing, packet capture, Wireshark
+- Privilege Escalation: Linux/Windows privesc, SUID, sudo misconfigs, token impersonation
+- Post-Exploitation: Persistence, lateral movement, data exfil techniques (for lab/CTF only)
+- Password Attacks: Hashcat, John the Ripper, credential stuffing concepts
+- Wireless: WPA2 cracking concepts, evil twin, deauth (lab only)
+- Social Engineering: Phishing frameworks, pretexting (awareness + defense focus)
+
+BLUE TEAM (Defensive):
+- Threat modeling and attack surface mapping
+- SIEM concepts: log analysis, alert triage, IOC identification
+- Hardening: Linux, Ubuntu, SSH, Nginx, Supabase, Cloudflare security rules
+- Incident response: detection, containment, eradication, recovery
+- Vulnerability management: CVE triage, patch prioritisation
+- Network defense: firewall rules, IDS/IPS concepts, zero-trust architecture
+- Endpoint security: EDR concepts, process monitoring, auditd
+- Cloud security: Cloudflare WAF, R2 bucket hardening, Supabase RLS policies
+- OSINT defense: reducing Cameron's own attack surface
+
+PURPLE TEAM INTEGRATION:
+- Translate red team findings into blue team controls
+- Build detection rules from known attack patterns
+- Run adversarial simulations to test defenses
+- Document findings in structured pentest report format
+
+CAMERON'S INFRASTRUCTURE TO PROTECT:
+- HP ProDesk (Ubuntu 24, i5-6500, 16GB) — local compute node, Ollama port 8787
+- Huawei N5368X 5G CPE — primary network uplink ("the vault")
+- Cloudflare (Workers, Pages, R2, D1, KV) — all web-facing assets
+- Supabase — databases for Buddies Worldwide, OpenClaw
+- n8n (self-hosted) — automation layer
+- GitHub repos — source code
+
+CERTIFICATIONS & LEARNING PATH TO SUPPORT:
+- CEH (Certified Ethical Hacker)
+- CompTIA Security+ / PenTest+
+- eJPT (eLearnSecurity Junior Penetration Tester)
+- TryHackMe / HackTheBox (CTF lab work)
+- OSCP (long-term goal)
+
+TOOLS YOU KNOW:
+Kali Linux, Parrot OS, Metasploit, Burp Suite, Nmap, Wireshark, Gobuster, ffuf, Nikto, Hydra, Hashcat, John, Netcat, SQLmap, Impacket, BloodHound, LinPEAS/WinPEAS, CyberChef, Shodan, theHarvester, Maltego, Autopsy
+
+OPERATING RULES:
+- All offensive techniques discussed only in context of authorised testing, CTFs, or lab environments
+- Always lead with "what does this tell the defender?" after any offensive finding
+- Flag legal/ethical boundaries explicitly when scope is ambiguous
+- Recommend free/open-source tools first (Kali, Parrot, Metasploit Community, Burp Free)
+- For Cameron's own infra: always give hardening steps alongside any vulnerability finding
+- Log all engagement notes and findings to Obsidian at /kyra/logs/cyber/
+
+OUTPUT FORMAT:
+- Finding: what was discovered
+- Risk level: CRITICAL / HIGH / MEDIUM / LOW / INFO
+- Attack vector: how it could be exploited
+- Remediation: concrete fix with commands
+- Detection: how to detect if this is being exploited
+- Reference: CVE / OWASP / MITRE ATT&CK ID where applicable</pre>
+  </div>
+</div>
+
+<!-- PENTEST METHODOLOGY -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--cyan)">PENTEST METHODOLOGY</div>
+    <div class="sec-tag">PTES + OWASP HYBRID</div>
+  </div>
+  <div class="sec-body">
+    <div class="phase"><div class="phase-num">1</div><div class="phase-content"><div class="phase-title">RECONNAISSANCE</div><div class="phase-desc">OSINT, passive recon, DNS enum, Shodan, LinkedIn, theHarvester, Maltego</div></div></div>
+    <div class="phase"><div class="phase-num">2</div><div class="phase-content"><div class="phase-title">SCANNING & ENUMERATION</div><div class="phase-desc">Nmap (ports/services/OS), Nikto (web), Gobuster (dirs), Nessus (vuln scan)</div></div></div>
+    <div class="phase"><div class="phase-num">3</div><div class="phase-content"><div class="phase-title">EXPLOITATION</div><div class="phase-desc">Metasploit, manual CVE exploit, SQLmap, Burp Suite active scan, custom payloads</div></div></div>
+    <div class="phase"><div class="phase-num">4</div><div class="phase-content"><div class="phase-title">POST-EXPLOITATION</div><div class="phase-desc">LinPEAS/WinPEAS privesc, credential harvesting, pivot planning (lab/CTF)</div></div></div>
+    <div class="phase"><div class="phase-num">5</div><div class="phase-content"><div class="phase-title">PURPLE TEAM DEBRIEF</div><div class="phase-desc">Map findings to MITRE ATT&CK, write detection rules, patch and re-test</div></div></div>
+    <div class="phase"><div class="phase-num">6</div><div class="phase-content"><div class="phase-title">REPORT</div><div class="phase-desc">Executive summary + technical findings + remediation roadmap + risk matrix</div></div></div>
+  </div>
+</div>
+
+<!-- TOOLS REFERENCE -->
+<div class="section red">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--red)">TOOL ARSENAL</div>
+    <div class="sec-tag">RED // BLUE // PURPLE</div>
+  </div>
+  <div class="sec-body">
+    <table class="tool-table">
+      <tr><th>TOOL</th><th>PURPOSE</th><th>HAT</th></tr>
+      <tr><td class="tool-name">Nmap</td><td>Port scan, service/OS detection</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">Burp Suite</td><td>Web app intercept, active/passive scan</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">Metasploit</td><td>Exploit framework, payload generation</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">SQLmap</td><td>Automated SQL injection</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">Gobuster / ffuf</td><td>Dir/file/vhost fuzzing</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">Hydra / Hashcat</td><td>Password cracking, brute force</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">LinPEAS / WinPEAS</td><td>Privilege escalation enumeration</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">theHarvester</td><td>OSINT — emails, domains, IPs</td><td class="tool-type-red">RED</td></tr>
+      <tr><td class="tool-name">Wireshark</td><td>Packet capture and analysis</td><td class="tool-type-purple">PURPLE</td></tr>
+      <tr><td class="tool-name">Netcat</td><td>Reverse shells, port probing, file transfer</td><td class="tool-type-purple">PURPLE</td></tr>
+      <tr><td class="tool-name">CyberChef</td><td>Encoding/decoding/crypto analysis</td><td class="tool-type-purple">PURPLE</td></tr>
+      <tr><td class="tool-name">MITRE ATT&CK</td><td>TTP mapping, detection engineering</td><td class="tool-type-purple">PURPLE</td></tr>
+      <tr><td class="tool-name">auditd</td><td>Linux syscall auditing, threat detection</td><td class="tool-type-blue">BLUE</td></tr>
+      <tr><td class="tool-name">Cloudflare WAF</td><td>Web application firewall rules</td><td class="tool-type-blue">BLUE</td></tr>
+      <tr><td class="tool-name">Supabase RLS</td><td>Row-level security, auth hardening</td><td class="tool-type-blue">BLUE</td></tr>
+      <tr><td class="tool-name">Fail2ban</td><td>Brute force protection, IP banning</td><td class="tool-type-blue">BLUE</td></tr>
+      <tr><td class="tool-name">OpenVAS</td><td>Vulnerability scanning (open-source)</td><td class="tool-type-blue">BLUE</td></tr>
+      <tr><td class="tool-name">Shodan</td><td>Exposed asset discovery (offensive + defensive)</td><td class="tool-type-purple">PURPLE</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- INFRA HARDENING -->
+<div class="section blue">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--blue)">CAMODEVOPS INFRA HARDENING</div>
+    <div class="sec-tag">IMMEDIATE ACTIONS FOR CAMERON'S STACK</div>
+  </div>
+  <div class="sec-body">
+    <div class="two-col">
+      <div class="mini-card">
+        <div class="label">// UBUNTU NODE</div>
+        <ul>
+          <li>Disable root SSH login</li>
+          <li>SSH key-only auth (no passwords)</li>
+          <li>UFW firewall — allow only 22, 8787, 27123 locally</li>
+          <li>Fail2ban on SSH</li>
+          <li>auditd for syscall logging</li>
+          <li>Regular <code>unattended-upgrades</code></li>
+          <li>Ollama bind to 127.0.0.1 only</li>
+        </ul>
+      </div>
+      <div class="mini-card">
+        <div class="label">// CLOUDFLARE</div>
+        <ul>
+          <li>WAF rules — block common SQLi/XSS patterns</li>
+          <li>Rate limiting on all API endpoints</li>
+          <li>Zero Trust tunnel for admin access</li>
+          <li>Bot Fight Mode enabled</li>
+          <li>R2 buckets — no public access by default</li>
+          <li>D1 — RLS equivalent via Workers</li>
+        </ul>
+      </div>
+      <div class="mini-card">
+        <div class="label">// SUPABASE</div>
+        <ul>
+          <li>Row-Level Security on ALL tables</li>
+          <li>No service key in frontend code</li>
+          <li>Auth email confirmation enabled</li>
+          <li>Restrict anon role permissions</li>
+          <li>Enable Supabase audit logs</li>
+          <li>Rotate API keys quarterly</li>
+        </ul>
+      </div>
+      <div class="mini-card">
+        <div class="label">// 5G CPE (HUAWEI N5368X)</div>
+        <ul>
+          <li>Change default admin credentials immediately</li>
+          <li>Disable remote management if unused</li>
+          <li>Check for firmware updates</li>
+          <li>Enable MAC address filtering</li>
+          <li>Separate IoT VLAN from dev network</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING PATH -->
+<div class="section green">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--green)">CERT + LEARNING PATH</div>
+    <div class="sec-tag">ZERO COST → EMPLOYABLE</div>
+  </div>
+  <div class="sec-body">
+    <pre style="font-size:0.75rem"><button class="copy-btn" onclick="cp(this)">COPY</button>PHASE 1 — FOUNDATION (Free)
+├── TryHackMe: Pre-Security + SOC Level 1 paths
+├── PicoCTF: beginner CTF challenges
+├── TCM Security: Practical Ethical Hacking (YouTube free content)
+└── Read: "The Web Application Hacker's Handbook" (free PDFs online)
+
+PHASE 2 — CERTIFICATIONS (Low cost)
+├── CompTIA Security+ (~R4,500 exam — most recognised)
+├── eJPT by eLearnSecurity (~$200 — hands-on, respected)
+└── CEH via NYDA/SETA funding if eligible
+
+PHASE 3 — PRACTICAL (Free platforms)
+├── HackTheBox: Starting Point machines
+├── VulnHub: offline lab VMs
+├── DVWA (Damn Vulnerable Web App) — local lab
+└── Metasploitable2/3 — local practice target
+
+PHASE 4 — CAREER ENTRY
+├── Build a pentest portfolio (document every HTB/THM room)
+├── GitHub: public writeups (CTF walkthroughs)
+├── LinkedIn: "Cybersecurity | Ethical Hacking | Purple Team"
+├── Target: SOC Analyst, Junior Pentester, Security Engineer
+└── UK/EU remote roles are time-zone aligned with SA (UTC+2)
+
+PHASE 5 — OSCP (6–12 months out)
+└── Offensive Security PEN-200 course → OSCP exam</pre>
+  </div>
+</div>
+
+<!-- N8N TRIGGER -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title" style="color:var(--purple)">ADD TO SWARM ROUTER</div>
+    <div class="sec-tag">N8N TRIGGER KEYWORDS + CURL TEST</div>
+  </div>
+  <div class="sec-body">
+    <div class="label">// TRIGGER KEYWORDS (add to n8n switch node)</div>
+    <pre style="font-size:0.75rem">pentest, CTF, exploit, vulnerability, CVE, hack, recon, nmap, 
+burp, SQLi, XSS, privilege escalation, hardening, firewall, 
+security audit, OSINT, Metasploit, brute force, payload, 
+blue team, red team, purple team, incident, threat, WAF, 
+SSH, port scan, reverse shell, hash, crack, enumeration</pre>
+
+    <div class="label">// OLLAMA MODELFILE</div>
+    <pre><button class="copy-btn" onclick="cp(this)">COPY</button>cat > /tmp/Modelfile-cyber << 'EOF'
+FROM qwen3:0.6b
+SYSTEM """
+[PASTE KYRA-CYBER SYSTEM PROMPT HERE]
+"""
+PARAMETER temperature 0.2
+PARAMETER num_ctx 8192
+EOF
+
+ollama create kyra-cyber -f /tmp/Modelfile-cyber
+ollama run kyra-cyber "Run a quick recon checklist for a web app pentest"</pre>
+
+    <div class="label">// TEST THE AGENT</div>
+    <pre><button class="copy-btn" onclick="cp(this)">COPY</button>curl -X POST http://localhost:5678/webhook/kyra-swarm \
+  -H "Content-Type: application/json" \
+  -d '{"agent":"cyber","task":"Give me a full Nmap scan command for initial recon on a target in my lab"}'</pre>
+
+    <div class="label">// OBSIDIAN LOG PATH</div>
+    <pre style="font-size:0.75rem">/kyra/logs/cyber/           ← engagement logs
+/kyra/logs/cyber/ctf/       ← CTF writeups
+/kyra/logs/cyber/hardening/ ← infra hardening notes
+/kyra/research/             ← CVE research, tool notes</pre>
+  </div>
+</div>
+
+<div class="footer">
+  <span>CAMODEVOPS // OPENCLAW</span>
+  <span>KYRA-CYBER v1.0 — PURPLE HAT</span>
+  <span>ETHICAL USE ONLY // AUTHORISED SCOPE</span>
+</div>
+
+</div>
+<script>
+function cp(btn) {
+  const pre = btn.parentElement;
+  const text = pre.innerText.replace('COPY\n','').replace('COPY','').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'DONE';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('ok'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>
