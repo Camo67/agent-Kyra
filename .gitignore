@@ -1,4 +1,21 @@
-# Dependencies
+# Python packaging and caches
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# MemPalace local state
+mempalace.yaml
+entities.json
+mempal.yaml
+.a5c/
+.claude/
+.codex/
+.codex
+
+# Node dependencies
 node_modules/
 
 # Environment and local secrets
@@ -28,6 +45,20 @@ yarn-error.log*
 # OS/editor noise
 .DS_Store
 Thumbs.db
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Virtual environments
+.venv/
+venv/
+
+# ChromaDB local data
+*.sqlite3-journal
