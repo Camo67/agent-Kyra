@@ -2,6 +2,48 @@
 
 This directory contains various scripts for managing and extending the Kyra AI system.
 
+## Swarm Watcher
+
+The `swarm_watcher.py` script keeps the Linux/Windows workflow synchronized through
+`COMM_STREAM.md`.
+
+It checks for `[TASK: ...]` entries, claims only the tasks that match the current
+machine role, skips tasks already marked `[IN_PROGRESS: ...]` by another role, and
+appends `[COMPLETED: ROLE_NAME]` or `[FAILED: ROLE_NAME]` with command output when a
+configured command finishes.
+
+### Usage
+
+Run once to see whether this machine can claim work:
+
+```bash
+python3 scripts/swarm_watcher.py --once
+```
+
+Run continuously on Linux/HP for build/prototype/outreach tasks:
+
+```bash
+python3 scripts/swarm_watcher.py \
+  --role LINUX_KYRA \
+  --command 'echo "Handle $SWARM_TASK_TYPE: $SWARM_TASK_LINE"'
+```
+
+Run continuously on Windows/Dell for browser research tasks:
+
+```powershell
+py -3 scripts/swarm_watcher.py `
+  --role WINDOWS_CODEX `
+  --stream "C:\path\to\Syncthing\COMM_STREAM.md" `
+  --command "powershell -NoProfile -Command `"Write-Output `"Handle `$env:SWARM_TASK_TYPE`: `$env:SWARM_TASK_LINE`"`""
+```
+
+Use `COMM_STREAM_PATH` when both machines share the stream through Syncthing:
+
+```bash
+export COMM_STREAM_PATH="/path/to/syncthing/COMM_STREAM.md"
+python3 scripts/swarm_watcher.py --role LINUX_KYRA
+```
+
 ## Huawei 5G IP Rotator Script
 
 The `huawei-5g-ip-rotator.py` script allows you to rotate IP addresses on a Huawei 5G router for scraping purposes. This is especially useful when you need to bypass rate limits or IP-based blocking.
