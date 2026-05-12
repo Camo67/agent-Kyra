@@ -1,13 +1,14 @@
-import sys
+import hashlib
 import json
 import os
 import re
-import hashlib
+import sys
 from datetime import datetime
-from mempalace.llm_client import get_provider
-from mempalace.config import MempalaceConfig, sanitize_name, sanitize_content
-from mempalace.knowledge_graph import KnowledgeGraph
+
 from mempalace.backends.registry import get_backend
+from mempalace.config import MempalaceConfig, sanitize_content, sanitize_name
+from mempalace.knowledge_graph import KnowledgeGraph
+from mempalace.llm_client import get_provider
 
 # Configuration
 CONFIG = MempalaceConfig()
@@ -122,12 +123,8 @@ def process_signals(message, signals):
     if not signals:
         return "Signals: 0 ideas, 0 entities, 0 facts (skipped: operational)"
 
-    ideas_count = 0
-    entities_count = 0
-    facts_count = 0
-
-    captured_originals = []
-    captured_entities = []
+    captured_originals_info = []
+    captured_entities_info = []
 
     # 1. Process Originals, Concepts, Ideas
     for category, wing in [
@@ -145,8 +142,7 @@ def process_signals(message, signals):
 
             drawer_id = add_to_palace(wing, slug, content)
             if drawer_id:
-                captured_originals.append({"wing": wing, "room": slug, "title": text})
-                ideas_count += 1
+                captured_originals_info.append(f"{wing}/{slug}")
 
     # 2. Process Entities
     for entity in signals.get("entities", []):
@@ -154,7 +150,6 @@ def process_signals(message, signals):
         if not name:
             continue
         etype = entity.get("type", "uncertain")
-        context = entity.get("context", "")
 
         wing = "people" if etype == "person" else "companies" if etype == "company" else "media"
         slug = slugify(name)
@@ -167,34 +162,60 @@ def process_signals(message, signals):
                 f"msg_{datetime.now().strftime('%Y%m%d%H%M%S')}",
                 valid_from=datetime.now().strftime("%Y-%m-%d"),
             )
-            entities_count += 1
-            captured_entities.append({"name": name, "wing": wing, "slug": slug, "context": context})
+            captured_entities_info.append(f"{wing}/{slug}")
         except Exception:
             continue
 
     # 3. Iron Law Back-linking
     today = datetime.now().strftime("%Y-%m-%d")
-    for original in captured_originals:
-        for entity in captured_entities:
-            if (
-                entity["name"].lower() in message.lower()
-                or entity["name"].lower() in original["title"].lower()
-            ):
-                try:
-                    target_path = f"{original['wing']}/{original['room']}"
-                    KG.add_triple(
-                        entity["name"],
-                        "referenced_in",
-                        target_path,
-                        valid_from=today,
-                        confidence=0.9,
-                    )
-                    facts_count += 1
-                except Exception:
+    facts_count = 0
+    # Re-extracting info for back-linking logic
+    for category in ["originals", "concepts", "ideas"]:
+        for item in signals.get(category, []):
+            item_text = item.get("text") or item.get("name")
+            if not item_text:
+                continue
+            item_wing = category
+            item_slug = item.get("slug") or slugify(item_text)
+
+            for entity in signals.get("entities", []):
+                ent_name = entity.get("name")
+                if not ent_name:
                     continue
 
-    summary = f"Signals: {ideas_count} ideas, {entities_count} entities, {facts_count} facts"
-    return summary
+                if ent_name.lower() in message.lower() or ent_name.lower() in item_text.lower():
+                    try:
+                        target_path = f"{item_wing}/{item_slug}"
+                        KG.add_triple(
+                            ent_name,
+                            "referenced_in",
+                            target_path,
+                            valid_from=today,
+                            confidence=0.9,
+                        )
+                        facts_count += 1
+                    except Exception:
+                        continue
+
+    # 4. Summary Logging
+    n_ideas = len(captured_originals_info)
+    ideas_label = "idea" if n_ideas == 1 else "ideas"
+    ideas_summary = f"{n_ideas} {ideas_label}"
+    if captured_originals_info:
+        ideas_summary += f" (captured → {', '.join(captured_originals_info[:2])})"
+
+    n_entities = len(captured_entities_info)
+    entities_label = "entity" if n_entities == 1 else "entities"
+    entities_summary = f"{n_entities} {entities_label}"
+    if captured_entities_info:
+        entities_summary += f" (enriched → {', '.join(captured_entities_info[:2])})"
+
+    summary_parts = [ideas_summary, entities_summary]
+    if facts_count > 0:
+        facts_label = "fact" if facts_count == 1 else "facts"
+        summary_parts.append(f"{facts_count} {facts_label}")
+
+    return "Signals: " + ", ".join(summary_parts)
 
 
 def main():
