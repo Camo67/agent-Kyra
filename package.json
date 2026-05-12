@@ -8,7 +8,10 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "scrape": "node scraper/scrape-businesses.js",
-    "test": "node test/js-parity.test.js"
+    "test": "node test/js-parity.test.js",
+    "mcp:n8n": "npx n8n-mcp",
+    "stack:up": "docker-compose up -d",
+    "stack:down": "docker-compose down"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",

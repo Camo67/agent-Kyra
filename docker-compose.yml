@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: camoflow-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_PORT=5678
+      - N8N_AUTH_DISABLED=true
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  n8n-mcp:
+    image: ghcr.io/czlonkowski/n8n-mcp:latest
+    container_name: camoflow-bridge
+    restart: always
+    environment:
+      - N8N_URL=http://n8n:5678
+      - N8N_API_KEY=${N8N_API_KEY:-}
+    depends_on:
+      - n8n
+
+  kyra-server:
+    build: .
+    container_name: camoflow-kyra
+    restart: always
+    ports:
+      - "8790:8790"
+      - "3001:3001"
+    environment:
+      - PORT=8790
+      - APP_PORT=3001
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  n8n_data:
