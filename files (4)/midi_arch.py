@@ -266,13 +266,13 @@ class DurationGatedMemory:
         lines = []
         for e in events:
             lines.append(
-                f"[{e.get('role','?')[0].upper()} "
-                f"ch:{e.get('channel',0)} "
-                f"pit:{e.get('pitch',60)} "
-                f"dom:{e.get('domain','?')} "
-                f"vel:{e.get('velocity',64)} "
-                f"dur:{e.get('duration',800)}ms] "
-                f"{e.get('compressed', e.get('raw',''))}"
+                f"[{e.get('role', '?')[0].upper()} "
+                f"ch:{e.get('channel', 0)} "
+                f"pit:{e.get('pitch', 60)} "
+                f"dom:{e.get('domain', '?')} "
+                f"vel:{e.get('velocity', 64)} "
+                f"dur:{e.get('duration', 800)}ms] "
+                f"{e.get('compressed', e.get('raw', ''))}"
             )
         return "\n".join(lines)
 
@@ -403,7 +403,7 @@ class MIDIMXitNet(nn.Module):
 
     def param_count(self) -> str:
         n = sum(p.numel() for p in self.parameters())
-        return f"{n/1e6:.1f}M" if n >= 1e6 else f"{n/1e3:.0f}K"
+        return f"{n / 1e6:.1f}M" if n >= 1e6 else f"{n / 1e3:.0f}K"
 
     @torch.no_grad()
     def generate(
@@ -485,7 +485,7 @@ class Trainer:
 
             avg_loss = total_loss / max(1, len(examples) // self.config.batch_size)
             self.scheduler.step()
-            print(f"  Epoch {epoch+1}/{self.config.max_epochs} — loss: {avg_loss:.4f}")
+            print(f"  Epoch {epoch + 1}/{self.config.max_epochs} — loss: {avg_loss:.4f}")
 
             if avg_loss < self.best_loss:
                 self.best_loss = avg_loss
