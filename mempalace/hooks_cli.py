@@ -34,7 +34,11 @@ def _mempalace_python() -> str:
         return env_python
     # This file lives at <venv>/lib/pythonX.Y/site-packages/mempalace/hooks_cli.py
     # or <project>/mempalace/hooks_cli.py (editable install).
-    venv_bin = Path(__file__).resolve().parents[3] / "bin" / "python"
+    try:
+        parents = Path(__file__).resolve().parents
+        venv_bin = parents[3] / "bin" / "python" if len(parents) > 3 else Path("nonexistent")
+    except (IndexError, ValueError):
+        venv_bin = Path("nonexistent")
     if venv_bin.is_file():
         return str(venv_bin)
     # Editable install: assumes project root has a venv/ sibling to mempalace/
