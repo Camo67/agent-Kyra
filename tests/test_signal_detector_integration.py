@@ -1,11 +1,10 @@
 import sys
 import os
 import subprocess
-import json
-from pathlib import Path
 
 # Add project root to sys.path
 sys.path.insert(0, os.getcwd())
+
 
 def test_signal_detector_mocked():
     """
@@ -26,7 +25,7 @@ def test_signal_detector_mocked():
             ["python3", "-m", "mempalace.signal_detector", message],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         print(f"STDOUT: {result.stdout}")
@@ -42,6 +41,7 @@ def test_signal_detector_mocked():
     except Exception as e:
         print(f"Test failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     test_signal_detector_mocked()

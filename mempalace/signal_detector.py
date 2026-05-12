@@ -3,24 +3,24 @@ import json
 import os
 import re
 import hashlib
-from pathlib import Path
 from datetime import datetime
 from mempalace.llm_client import get_provider
 from mempalace.config import MempalaceConfig, sanitize_name, sanitize_content
 from mempalace.knowledge_graph import KnowledgeGraph
 from mempalace.backends.registry import get_backend
-from mempalace.version import __version__
 
 # Configuration
 CONFIG = MempalaceConfig()
 PALACE_PATH = CONFIG.palace_path
 KG = KnowledgeGraph(PALACE_PATH)
 
+
 def slugify(text):
     text = text.lower()
-    text = re.sub(r'[^\w\s-]', '', text)
-    text = re.sub(r'[\s_-]+', '-', text).strip('-')
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_-]+", "-", text).strip("-")
     return text[:50]
+
 
 def get_llm():
     # Use Ollama as default cheap provider if available
@@ -30,25 +30,31 @@ def get_llm():
         p = get_provider(provider_name, model_name)
         ok, msg = p.check_available()
         if not ok:
-             if provider_name == "ollama":
-                 # Gracefully degrade if ollama is not reachable
-                 return None
+            if provider_name == "ollama":
+                # Gracefully degrade if ollama is not reachable
+                return None
         return p
     except Exception:
         alt_provider = os.environ.get("MEMPAL_LLM_FALLBACK_PROVIDER")
         if alt_provider:
-             try:
-                 return get_provider(alt_provider, os.environ.get("MEMPAL_LLM_FALLBACK_MODEL", "gpt-4o-mini"))
-             except:
-                 return None
+            try:
+                return get_provider(
+                    alt_provider, os.environ.get("MEMPAL_LLM_FALLBACK_MODEL", "gpt-4o-mini")
+                )
+            except Exception:
+                return None
         return None
+
 
 def detect_signals(message):
     if not message or len(message.strip()) < 5:
         return None
 
     # Skip operational messages
-    operational_patterns = [r"^(ok|thanks|thank you|do it|done|yes|no|y|n|cool|got it|help|restart|status|tasks|logs|stats|clear)\.?$", r"^\s*$"]
+    operational_patterns = [
+        r"^(ok|thanks|thank you|do it|done|yes|no|y|n|cool|got it|help|restart|status|tasks|logs|stats|clear)\.?$",
+        r"^\s*$",
+    ]
     if any(re.match(p, message.strip().lower()) for p in operational_patterns):
         return None
 
@@ -75,9 +81,10 @@ Return JSON only:
     try:
         resp = llm.classify(system_prompt, message, json_mode=True)
         return json.loads(resp.text)
-    except Exception as e:
+    except Exception:
         # Don't log full error to stdout to keep Signal Logging clean
         return None
+
 
 def add_to_palace(wing, room, content):
     try:
@@ -92,21 +99,24 @@ def add_to_palace(wing, room, content):
 
         existing = col.get(ids=[drawer_id])
         if existing and existing.get("ids"):
-             return drawer_id
+            return drawer_id
 
         col.upsert(
             documents=[content],
             ids=[drawer_id],
-            metadatas=[{
-                "wing": wing,
-                "room": room,
-                "added_by": "signal-detector",
-                "ts": datetime.now().timestamp()
-            }]
+            metadatas=[
+                {
+                    "wing": wing,
+                    "room": room,
+                    "added_by": "signal-detector",
+                    "ts": datetime.now().timestamp(),
+                }
+            ],
         )
         return drawer_id
     except Exception:
         return None
+
 
 def process_signals(message, signals):
     if not signals:
@@ -120,11 +130,16 @@ def process_signals(message, signals):
     captured_entities = []
 
     # 1. Process Originals, Concepts, Ideas
-    for category, wing in [("originals", "originals"), ("concepts", "concepts"), ("ideas", "ideas")]:
+    for category, wing in [
+        ("originals", "originals"),
+        ("concepts", "concepts"),
+        ("ideas", "ideas"),
+    ]:
         items = signals.get(category, [])
         for item in items:
             text = item.get("text") or item.get("name")
-            if not text: continue
+            if not text:
+                continue
             slug = item.get("slug") or slugify(text)
             content = f"## {text}\n\nCaptured from message: \"{message}\"\n\nContext: {item.get('context', 'N/A')}\n\nDate: {datetime.now().isoformat()}"
 
@@ -136,7 +151,8 @@ def process_signals(message, signals):
     # 2. Process Entities
     for entity in signals.get("entities", []):
         name = entity.get("name")
-        if not name: continue
+        if not name:
+            continue
         etype = entity.get("type", "uncertain")
         context = entity.get("context", "")
 
@@ -145,8 +161,12 @@ def process_signals(message, signals):
 
         try:
             KG.add_entity(name, etype)
-            KG.add_triple(name, "mentioned_in", f"msg_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                        valid_from=datetime.now().strftime("%Y-%m-%d"))
+            KG.add_triple(
+                name,
+                "mentioned_in",
+                f"msg_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                valid_from=datetime.now().strftime("%Y-%m-%d"),
+            )
             entities_count += 1
             captured_entities.append({"name": name, "wing": wing, "slug": slug, "context": context})
         except Exception:
@@ -156,18 +176,26 @@ def process_signals(message, signals):
     today = datetime.now().strftime("%Y-%m-%d")
     for original in captured_originals:
         for entity in captured_entities:
-            if entity["name"].lower() in message.lower() or entity["name"].lower() in original["title"].lower():
+            if (
+                entity["name"].lower() in message.lower()
+                or entity["name"].lower() in original["title"].lower()
+            ):
                 try:
                     target_path = f"{original['wing']}/{original['room']}"
-                    KG.add_triple(entity["name"], "referenced_in", target_path,
-                                valid_from=today,
-                                confidence=0.9)
+                    KG.add_triple(
+                        entity["name"],
+                        "referenced_in",
+                        target_path,
+                        valid_from=today,
+                        confidence=0.9,
+                    )
                     facts_count += 1
                 except Exception:
                     continue
 
     summary = f"Signals: {ideas_count} ideas, {entities_count} entities, {facts_count} facts"
     return summary
+
 
 def main():
     if len(sys.argv) < 2:
@@ -177,6 +205,7 @@ def main():
     signals = detect_signals(message)
     summary = process_signals(message, signals)
     print(summary)
+
 
 if __name__ == "__main__":
     main()
