@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { spawn } from "node:child_process";
 
 import InferenceBridge from "./inference-bridge.js";
 import MXitBuffer from "./mxit-buffer.js";
@@ -82,6 +83,20 @@ function createDefaultBridge(options) {
   });
 }
 
+/**
+ * Trigger Signal Detector sub-agent in parallel (non-blocking).
+ */
+function triggerSignalDetector(message) {
+  if (!message || message.length < 5) return;
+
+  const child = spawn("python3", ["-m", "mempalace.signal_detector", message], {
+    detached: true,
+    stdio: "inherit"
+  });
+
+  child.unref();
+}
+
 export function createKyraServer(options = {}) {
   const bridge = options.bridge ?? createDefaultBridge(options);
   const buffer = options.buffer ?? new MXitBuffer({ maxEvents: options.maxEvents ?? 12 });
@@ -115,6 +130,24 @@ export function createKyraServer(options = {}) {
             conversationsPath: "Kyra/Conversations"
           }
         });
+        return;
+      }
+
+      if (request.method === "POST" && requestUrl.pathname === "/kyra/chat") {
+        const payload = await readJsonBody(request);
+        const userText = payload.message || payload.text || "";
+
+        // Spawn Signal Detector in parallel
+        triggerSignalDetector(userText);
+
+        // Process main response
+        const result = await bridge.sendCompletion({
+            userText,
+            model: payload.model,
+            target: payload.target
+        });
+
+        sendJson(response, 200, result);
         return;
       }
 
