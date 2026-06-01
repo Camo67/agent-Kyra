@@ -2,7 +2,7 @@ import http from "node:http";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
-import InferenceBridge from "./inference-bridge.js";
+import InferenceBridge from "./lib/ai-router.js";
 import MXitBuffer from "./mxit-buffer.js";
 import {
   appendKyraConversation,

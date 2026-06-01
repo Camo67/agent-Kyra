@@ -142,7 +142,7 @@ flutter run  # Android device/emulator
 - Obsidian Integration: Note storage and linking
 - MXit Buffer: Event-based memory streaming
 
-### AI Integration (`inference-bridge.js`)
+### AI Integration (`lib/ai-router.js`)
 - Multi-provider LLM failover chain
 - Local model support via Ollama
 - Context-aware prompt engineering
@@ -213,7 +213,7 @@ CONVERSATIONS_VAULT=Kyra/Conversations
 kyra-ai-stack/
 ├── app.js                 # Lead scanner application
 ├── kyra-server.js         # Core Kyra server
-├── inference-bridge.js    # AI model integration
+├── lib/ai-router.js    # AI model integration
 ├── weaver-memory.js       # Memory indexing system
 ├── obsidian-memory.js     # Obsidian vault integration
 ├── voice-adapter.js       # Voice processing
@@ -288,3 +288,10 @@ MIT License - See [LICENSE](LICENSE) file for details.
 ---
 
 **Built by Cameron "Camo" de Vries** — CamodevOps, Bonteheuwel, Cape Town
+## New Integrated Tools (2026-05)
+
+- **n8n-MCP** (`czlonkowski/n8n-mcp`): Bridge giving Claude access to 1,650+ n8n nodes and 2,300+ templates.
+- **Superpowers** (`obra/superpowers`): Structured software dev workflow (spec → plan → subagent).
+- **Claude Mem** (`thedotmack/claude-mem`): Persistent memory for agent sessions.
+- **LightRAG** (`hkuds/lightrag`): Dual-level retrieval (entity-specific + thematic) integrated into `lib/ai-router.js`.
+- **DeepSeek-R1-Abliterated**: Uncensored reasoning model integrated via Ollama for complex logic tasks.
