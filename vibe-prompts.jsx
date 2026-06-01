@@ -162,7 +162,7 @@ Unit test block. No npm packages (use built-in fs only if persist=true).`,
 
 TASK: Build the inference bridge that connects the memory buffer to a local LLM.
 
-FILE: inference-bridge.js
+FILE: lib/ai-router.js
 
 REQUIREMENTS:
 Import MXitBuffer from mxit-buffer.js
@@ -225,7 +225,7 @@ FILE: cli.js (Node.js, run with: node cli.js)
 
 REQUIREMENTS:
 Import MXitBuffer from mxit-buffer.js
-Import InferenceBridge from inference-bridge.js
+Import InferenceBridge from lib/ai-router.js
 Import { decode } from midi-encoder.js
 
 FEATURES:
