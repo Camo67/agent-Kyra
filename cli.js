@@ -4,7 +4,7 @@ import { createInterface } from "node:readline";
 import { grammarSummary } from "./midi-grammar.js";
 import { decode, toPianoRoll } from "./midi-encoder.js";
 import MXitBuffer from "./mxit-buffer.js";
-import InferenceBridge from "./inference-bridge.js";
+import InferenceBridge from "./lib/ai-router.js";
 
 const buffer = new MXitBuffer({
   maxEvents: 12,

@@ -54,3 +54,8 @@ This log tracks ideas, optimizations, and improvements identified while working 
 **Issue:** Health check doesn't verify Obsidian API connectivity
 **Solution:** Extend health check endpoint to test Obsidian API availability
 **Status:** Open
+### 2026-05-12
+**Component:** lib/ai-router.js (DeepSeek-R1 Reasoning)
+**Issue:** No dedicated path for complex reasoning tasks requiring chain-of-thought models.
+**Solution:** Added support for 'huihui_ai/deepseek-r1-abliterated' via a new 'reasoning' target in sendCompletion.
+**Status:** Implemented

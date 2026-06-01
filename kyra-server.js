@@ -3,7 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import InferenceBridge from "./inference-bridge.js";
+import InferenceBridge from "./lib/ai-router.js";
 import MXitBuffer from "./mxit-buffer.js";
 import { linkKyraBufferMemory, resolveVaultPath } from "./obsidian-memory.js";
 import { runPlaywrightTask } from "./playwright-tool.js";
