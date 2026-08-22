@@ -22,7 +22,7 @@ def test_signal_detector_mocked():
     # Run the detector
     try:
         result = subprocess.run(
-            ["python3", "-m", "mempalace.signal_detector", message],
+            [sys.executable, "-m", "mempalace.signal_detector", message],
             capture_output=True,
             text=True,
             timeout=30,

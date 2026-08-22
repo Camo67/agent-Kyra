@@ -1,5 +1,7 @@
 # Kyra AI Stack: CamoFlow Automation & Lead Generation
 
+![version](https://img.shields.io/badge/version-3.3.3-blue)
+
 **Kyra** is a polyglot AI agent ecosystem designed for 24/7 autonomous operations, business lead generation, and seamless automation via n8n. It features a local-first memory system (MemPalace) and an AI-powered bridge (CamoFlow) that connects your favorite assistants (Claude, Cursor) directly to your automation workflows.
 
 ---
