@@ -13,7 +13,7 @@ from mempalace.llm_client import get_provider
 # Configuration
 CONFIG = MempalaceConfig()
 PALACE_PATH = CONFIG.palace_path
-KG = KnowledgeGraph(PALACE_PATH)
+KG = KnowledgeGraph(db_path=os.path.join(PALACE_PATH, "knowledge_graph.sqlite3"))
 
 
 def slugify(text):
