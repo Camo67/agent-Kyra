@@ -260,11 +260,32 @@ async function sendToGroq(payload, options = {}) {
 async function sendCompletion(payload, options = {}) {
   // Determine target based on payload or environment setting
   const target = payload.target || process.env.DEFAULT_TARGET || "local";
-  
-  if (target === "groq") {
-    return await sendToGroq(payload, options);
-  } else {
-    return await sendToOllama(payload, options);
+
+  try {
+    if (target === "groq") {
+      return await sendToGroq(payload, options);
+    } else {
+      return await sendToOllama(payload, options);
+    }
+  } catch (primaryError) {
+    // If the primary target failed and we haven't already tried groq, attempt
+    // a groq fallback (requires GROQ_API_KEY to be set).
+    if (target !== "groq" && process.env.GROQ_API_KEY) {
+      try {
+        return await sendToGroq(payload, options);
+      } catch {
+        // Both paths exhausted — fall through to graceful error reply below.
+      }
+    }
+
+    // Return a friendly error reply rather than throwing so that callers
+    // (e.g. the n8n Telegram bridge) always receive a usable `reply` field.
+    const reason = primaryError instanceof Error ? primaryError.message : String(primaryError);
+    return {
+      reply: `⚠️ Kyra's model backend is unreachable right now. (${reason}) — check that Ollama or LM Studio is running, or set GROQ_API_KEY as a fallback.`,
+      error: reason,
+      choices: []
+    };
   }
 }
 

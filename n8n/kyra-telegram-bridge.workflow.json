@@ -60,7 +60,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ chat_id: ($node['Telegram Kyra Webhook'].json?.body?.message?.chat?.id ?? $node['Telegram Kyra Webhook'].json?.body?.edited_message?.chat?.id), text: $node['Call Local Kyra Bridge'].json['reply'] || 'Kyra did not return a response yet.' }) }}"
+        "jsonBody": "={{ JSON.stringify({ chat_id: ($node['Telegram Kyra Webhook'].json?.body?.message?.chat?.id ?? $node['Telegram Kyra Webhook'].json?.body?.edited_message?.chat?.id), text: ($node['Call Local Kyra Bridge'].json?.reply ?? $node['Call Local Kyra Bridge'].json?.choices?.[0]?.message?.content ?? $node['Call Local Kyra Bridge'].json?.response ?? '⚠️ Kyra did not return a response.') }) }}"
       },
       "id": "send-telegram",
       "name": "Send Telegram Message",
