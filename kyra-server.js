@@ -147,7 +147,38 @@ export function createKyraServer(options = {}) {
             target: payload.target
         });
 
-        sendJson(response, 200, result);
+        // Extract text into a top-level `reply` field so the n8n Telegram
+        // bridge workflow can read it via json['reply'] without having to
+        // navigate the OpenAI-shaped choices array.
+        const reply =
+          result?.reply ??
+          result?.response ??
+          result?.choices?.[0]?.message?.content ??
+          result?.choices?.[0]?.delta?.content ??
+          "";
+
+        sendJson(response, 200, { reply, ...result });
+        return;
+      }
+
+      if (request.method === "POST" && requestUrl.pathname === "/kyra/research") {
+        const payload = await readJsonBody(request);
+        const { task, from, subject, body: emailBody, emailId } = payload;
+
+        const researchPrompt = task === "email"
+          ? `You are Atlas, Kyra's research and outreach agent for CamOdevOps.\n\nYou received an email:\nFrom: ${from}\nSubject: ${subject}\nBody: ${emailBody}\n\nDo two things:\n1. RESEARCH: Who is this person/company? What do they do? How do they connect to CamOdevOps (web dev, AI, community)? Any opportunity here?\n2. DRAFT: Write a professional reply from Camo at CamOdevOps. Friendly, direct, South African tone. Max 150 words.\n\nRespond as JSON: { "research": "...", "draft": "..." }`
+          : `Research task: ${JSON.stringify(payload)}`;
+
+        const result = await bridge.sendCompletion({ userText: researchPrompt });
+        let parsed = { research: "", draft: "" };
+        try {
+          const text = result?.reply ?? result?.choices?.[0]?.message?.content ?? "";
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+          else parsed = { research: text, draft: "" };
+        } catch { parsed = { research: result?.reply ?? "", draft: "" }; }
+
+        sendJson(response, 200, { ...parsed, emailId });
         return;
       }
 

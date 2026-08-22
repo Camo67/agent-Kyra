@@ -1,0 +1,156 @@
+{
+  "name": "kyra-atlas-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 5 }] }
+      },
+      "id": "schedule-trigger",
+      "name": "Poll Every 5 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 10,
+        "filters": {
+          "q": "to:(hermes@camodevops.online OR info@camodevops.online) is:unread -label:atlas-processed"
+        },
+        "options": { "format": "full" }
+      },
+      "id": "gmail-fetch",
+      "name": "Fetch Unread Emails",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [460, 300],
+      "credentials": { "gmailOAuth2": { "id": "gmail-creds", "name": "Gmail (Camo)" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [{ "leftValue": "={{ $json.id }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty" } }]
+        }
+      },
+      "id": "has-emails",
+      "name": "Any Emails?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8790/kyra/research",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  task: 'email',\n  from: $json.from,\n  subject: $json.subject,\n  body: ($json.text || $json.snippet || '').slice(0, 2000),\n  emailId: $json.id\n}) }}",
+        "options": { "response": { "responseFormat": "json" }, "timeout": 90000 }
+      },
+      "id": "kyra-research",
+      "name": "Kyra: Research + Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: $env.TELEGRAM_CHAT_ID,\n  parse_mode: 'Markdown',\n  text: '📬 *New Email — Atlas*\\n\\n' +\n    '*From:* ' + $node['Fetch Unread Emails'].json.from + '\\n' +\n    '*Subject:* ' + $node['Fetch Unread Emails'].json.subject + '\\n\\n' +\n    '*Kyra\\'s research:*\\n' + ($json.research || 'No intel found.') + '\\n\\n' +\n    '*Draft reply:*\\n' + ($json.draft || 'No draft generated.'),\n  reply_markup: JSON.stringify({\n    inline_keyboard: [[\n      { text: '✅ Send', callback_data: 'atlas_send_' + $node['Fetch Unread Emails'].json.id },\n      { text: '🗑️ Skip', callback_data: 'atlas_skip_' + $node['Fetch Unread Emails'].json.id }\n    ]]\n  })\n}) }}"
+      },
+      "id": "telegram-notify",
+      "name": "Telegram: Send Draft for Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "atlas-approval",
+        "responseMode": "responseNode"
+      },
+      "id": "approval-webhook",
+      "name": "Atlas Approval Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [240, 560],
+      "webhookId": "atlas-approval-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "leftValue": "={{ $json.body?.callback_query?.data }}", "rightValue": "atlas_send_", "operator": { "type": "string", "operation": "startsWith" } }]
+        }
+      },
+      "id": "check-approved",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8790/kyra/memory/link",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  source: 'atlas-email',\n  tags: ['email', 'contact', 'prospect'],\n  emailId: $json.body?.callback_query?.data?.replace('atlas_send_', '')\n}) }}"
+      },
+      "id": "save-to-memory",
+      "name": "Save Contact to Kyra Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [680, 480]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": { "responseCode": 200 }
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [680, 640]
+    }
+  ],
+  "connections": {
+    "Poll Every 5 Min": { "main": [[{ "node": "Fetch Unread Emails", "type": "main", "index": 0 }]] },
+    "Fetch Unread Emails": { "main": [[{ "node": "Any Emails?", "type": "main", "index": 0 }]] },
+    "Any Emails?": {
+      "main": [
+        [{ "node": "Kyra: Research + Draft", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Kyra: Research + Draft": { "main": [[{ "node": "Telegram: Send Draft for Approval", "type": "main", "index": 0 }]] },
+    "Atlas Approval Webhook": { "main": [[{ "node": "Approved?", "type": "main", "index": 0 }]] },
+    "Approved?": {
+      "main": [
+        [{ "node": "Save Contact to Kyra Memory", "type": "main", "index": 0 }],
+        [{ "node": "Respond OK", "type": "main", "index": 0 }]
+      ]
+    },
+    "Save Contact to Kyra Memory": { "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]] }
+  },
+  "settings": {},
+  "staticData": null
+}
